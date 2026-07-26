@@ -41,10 +41,22 @@ export default defineConfig(
 	eslintPluginUnicorn.configs['recommended'],
 	{
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },
+		settings: {
+			'import/resolver': {
+				typescript: {
+					project: ['./tsconfig.json'],
+					alwaysTryTypes: true
+				},
+				node: {
+					extensions: ['.js', '.ts', '.svelte']
+				}
+			}
+		},
 		rules: {
 			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
 			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-			'no-undef': 'off'
+			'no-undef': 'off',
+			'unicorn/no-top-level-assignment-in-function': 'off'
 		}
 	},
 	{
