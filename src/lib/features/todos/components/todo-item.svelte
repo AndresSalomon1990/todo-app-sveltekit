@@ -4,7 +4,7 @@
   interface Properties {
     todo: Todo
     onToggle: (id: number) => void
-    onDelete: (id: number) => void;
+    onDelete: (id: number) => void
   }
 
   let { todo, onToggle, onDelete }: Properties = $props()

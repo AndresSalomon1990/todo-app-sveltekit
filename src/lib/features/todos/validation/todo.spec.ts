@@ -54,18 +54,18 @@ describe('getTodos', () => {
 })
 
 it('creates a todo when the API responds ok', async () => {
-  const newTodo = { userId: 1, title: 'New', completed: false };
-  const created = { id: 101, ...newTodo };
+  const newTodo = { userId: 1, title: 'New', completed: false }
+  const created = { id: 101, ...newTodo }
 
   vi.mocked(fetch).mockResolvedValue({
     ok: true,
     json: async () => created,
-  } as Response);
+  } as Response)
 
-  const result = await createTodo(newTodo);
-  expect(result).toEqual(created);
+  const result = await createTodo(newTodo)
+  expect(result).toEqual(created)
   expect(fetch).toHaveBeenCalledWith(
     expect.stringContaining('/todos'),
     expect.objectContaining({ method: 'POST' })
-  );
-});
+  )
+})
