@@ -4,9 +4,10 @@
   interface Properties {
     todo: Todo
     onToggle: (id: number) => void
+    onDelete: (id: number) => void;
   }
 
-  let { todo, onToggle }: Properties = $props()
+  let { todo, onToggle, onDelete }: Properties = $props()
 </script>
 
 <li class="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
@@ -21,7 +22,17 @@
       {todo.title}
     </span>
   </label>
-  <span class="text-xs tracking-[0.2em] text-slate-400 uppercase">
-    {todo.completed ? 'completed' : 'pending'}
-  </span>
+  <div class="flex items-end gap-2">
+    <span class="text-xs tracking-[0.2em] text-slate-400 uppercase">
+      {todo.completed ? 'completed' : 'pending'}
+    </span>
+    <button
+      type="button"
+      onclick={() => onDelete(todo.id)}
+      class="text-xs text-red-500 hover:text-red-700"
+      aria-label="Delete todo"
+    >
+      Delete
+    </button>
+  </div>
 </li>

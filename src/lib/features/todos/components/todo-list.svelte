@@ -5,13 +5,14 @@
   interface Properties {
     todos: Todo[]
     onToggle: (id: number) => void
+    onDelete: (id: number) => void
   }
 
-  let { todos, onToggle }: Properties = $props()
+  let { todos, onToggle, onDelete }: Properties = $props()
 </script>
 
 <ul class="space-y-2">
   {#each todos as todo (todo.id)}
-    <TodoItem {todo} {onToggle} />
+    <TodoItem {todo} {onToggle} {onDelete} />
   {/each}
 </ul>

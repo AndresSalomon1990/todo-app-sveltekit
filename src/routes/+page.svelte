@@ -1,26 +1,57 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+
   import TodoForm from '$lib/features/todos/components/todo-form.svelte'
   import TodoList from '$lib/features/todos/components/todo-list.svelte'
+  import { createTodo, deleteTodo, updateTodo } from '$lib/features/todos/services/todos.service'
   import type { Todo } from '$lib/features/todos/types/todos.type'
 
-import type { PageProps as PageProperties } from './$types'
+  import type { PageProps as PageProperties } from './$types'
 
   let { data }: PageProperties = $props()
-  let todos = $state<Todo[]>([...data.todos])
+  // we know data is reactive, but we need only a snapshot of the todos array
+  let todos = $state<Todo[]>(untrack(() => [...data.todos]))
 
-  function handleAdd(title: string) {
-    todos = [...todos, {
-      id: Date.now(),
+  async function handleAdd(title: string) {
+    const optimistic: Todo = {
+      id: Date.now(), // temporal
       title,
       completed: false,
-      userId: 1
-    }];
+      userId: 1,
+    };
+
+    todos = [...todos, optimistic];
+
+    try {
+      const created = await createTodo({ title, completed: false, userId: 1 });
+      // Replace the optimistic with the response from the server
+      todos = todos.map(t => t.id === optimistic.id ? { ...created, id: optimistic.id } : t);
+    } catch {
+      // Revert the optimistic
+      todos = todos.filter(t => t.id !== optimistic.id);
+      // TODO: show error to the user
+    }
   }
 
-  function handleToggle(id: number) {
-    todos = todos.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    );
+  async function handleToggle(id: number) {
+    const previous = todos;
+    todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    try {
+      const todo = todos.find(t => t.id === id)!;
+      await updateTodo(id, { completed: todo.completed });
+    } catch {
+      todos = previous; // revert
+    }
+  }
+
+  async function handleDelete(id: number) {
+    const previous = todos;
+    todos = todos.filter(t => t.id !== id);
+    try {
+      await deleteTodo(id);
+    } catch {
+      todos = previous; // revert
+    }
   }
 </script>
 
@@ -43,7 +74,7 @@ import type { PageProps as PageProperties } from './$types'
     {#if data.fetchError}
       <p class="text-sm text-red-600">{data.fetchError as string}</p>
     {:else}
-      <TodoList {todos} onToggle={handleToggle} />
+      <TodoList {todos} onToggle={handleToggle} onDelete={handleDelete} />
     {/if}
   </div>
 </div>

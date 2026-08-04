@@ -1,7 +1,6 @@
-import type { Mock } from 'vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getTodos } from '../services/todos.service'
+import { createTodo, getTodos } from '../services/todos.service'
 import { validateTodoTitle } from './todo'
 
 describe('todo validation', () => {
@@ -34,24 +33,39 @@ describe('getTodos', () => {
   })
 
   it('returns todos when the API responds ok', async () => {
-    const fetchMock = fetch as unknown as Mock
-    fetchMock.mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: async () => fakeTodos,
-    })
+    } as Response)
 
     const todos = await getTodos()
     expect(todos).toEqual(fakeTodos)
   })
 
   it('throws error when the API response is not ok', async () => {
-    const fetchMock = fetch as unknown as Mock
-    fetchMock.mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: false,
       status: 500,
       json: async () => ({}),
-    })
+    } as Response)
 
     await expect(getTodos()).rejects.toThrow('Error fetching todos: 500')
   })
 })
+
+it('creates a todo when the API responds ok', async () => {
+  const newTodo = { userId: 1, title: 'New', completed: false };
+  const created = { id: 101, ...newTodo };
+
+  vi.mocked(fetch).mockResolvedValue({
+    ok: true,
+    json: async () => created,
+  } as Response);
+
+  const result = await createTodo(newTodo);
+  expect(result).toEqual(created);
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringContaining('/todos'),
+    expect.objectContaining({ method: 'POST' })
+  );
+});
