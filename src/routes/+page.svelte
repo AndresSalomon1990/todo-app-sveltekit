@@ -21,7 +21,15 @@
 
   const visibleTodos = $derived(filterTodos(todos, activeFilter))
 
+  let actionError = $state('');
+
+  function clearActionError() {
+    actionError = ''
+  }
+
   async function handleAdd(title: string) {
+    clearActionError()
+
     const optimistic: Todo = {
       id: Date.now(), // temporal
       title,
@@ -38,11 +46,13 @@
     } catch {
       // Revert the optimistic
       todos = todos.filter((t) => t.id !== optimistic.id)
-      // TODO: show error to the user
+      actionError = 'Could not add todo'
     }
   }
 
   async function handleToggle(id: number) {
+    clearActionError()
+
     const previous = todos
     todos = todos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
     try {
@@ -50,17 +60,26 @@
       await updateTodo(id, { completed: todo.completed })
     } catch {
       todos = previous // revert
+      actionError = 'Could not toggle todo'
     }
   }
 
   async function handleDelete(id: number) {
+    clearActionError()
+
     const previous = todos
     todos = todos.filter((t) => t.id !== id)
     try {
       await deleteTodo(id)
     } catch {
       todos = previous // revert
+      actionError = 'Could not delete todo'
     }
+  }
+
+  function handleFilterChange(filter: TodoFilter) {
+    clearActionError()
+    activeFilter = filter
   }
 </script>
 
@@ -80,7 +99,11 @@
 
     <TodoForm onSubmit={handleAdd} />
 
-    <TodoFilterBar {activeFilter} {counts} onFilterChange={(f) => (activeFilter = f)} />
+    {#if actionError}
+      <p class="mb-4 text-sm text-red-600" role="alert">{actionError}</p>
+    {/if}
+
+    <TodoFilterBar {activeFilter} {counts} onFilterChange={handleFilterChange} />
 
     {#if data.fetchError}
       <p class="text-sm text-red-600">{data.fetchError as string}</p>
