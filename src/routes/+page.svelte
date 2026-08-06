@@ -1,19 +1,20 @@
 <script lang="ts">
-  import { untrack } from 'svelte'
-
   import TodoFilterBar from '$lib/features/todos/components/todo-filter.svelte'
   import TodoForm from '$lib/features/todos/components/todo-form.svelte'
   import TodoList from '$lib/features/todos/components/todo-list.svelte'
-  import { createTodo, deleteTodo, updateTodo } from '$lib/features/todos/services/todos.service'
   import type { TodoFilter } from '$lib/features/todos/types/todo-filter.type'
   import type { Todo } from '$lib/features/todos/types/todos.type'
   import { filterTodos, todoCounts } from '$lib/features/todos/utils/filter-todos'
 
   import type { PageProps as PageProperties } from './$types'
 
-  let { data }: PageProperties = $props()
-  // we know data is reactive, but we need only a snapshot of the todos array
-  let todos = $state<Todo[]>(untrack(() => [...data.todos]))
+  let { data, form }: PageProperties = $props()
+
+  let todos = $state<Todo[]>([])
+
+  $effect(() => {
+    todos = [...data.todos]
+  })
 
   let activeFilter: TodoFilter = $state<TodoFilter>('all')
 
@@ -21,64 +22,7 @@
 
   const visibleTodos = $derived(filterTodos(todos, activeFilter))
 
-  let actionError = $state('');
-
-  function clearActionError() {
-    actionError = ''
-  }
-
-  async function handleAdd(title: string) {
-    clearActionError()
-
-    const optimistic: Todo = {
-      id: Date.now(), // temporal
-      title,
-      completed: false,
-      userId: 1,
-    }
-
-    todos = [...todos, optimistic]
-
-    try {
-      const created = await createTodo({ title, completed: false, userId: 1 })
-      // Replace the optimistic with the response from the server
-      todos = todos.map((t) => (t.id === optimistic.id ? { ...created, id: optimistic.id } : t))
-    } catch {
-      // Revert the optimistic
-      todos = todos.filter((t) => t.id !== optimistic.id)
-      actionError = 'Could not add todo'
-    }
-  }
-
-  async function handleToggle(id: number) {
-    clearActionError()
-
-    const previous = todos
-    todos = todos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    try {
-      const todo = todos.find((t) => t.id === id)!
-      await updateTodo(id, { completed: todo.completed })
-    } catch {
-      todos = previous // revert
-      actionError = 'Could not toggle todo'
-    }
-  }
-
-  async function handleDelete(id: number) {
-    clearActionError()
-
-    const previous = todos
-    todos = todos.filter((t) => t.id !== id)
-    try {
-      await deleteTodo(id)
-    } catch {
-      todos = previous // revert
-      actionError = 'Could not delete todo'
-    }
-  }
-
   function handleFilterChange(filter: TodoFilter) {
-    clearActionError()
     activeFilter = filter
   }
 </script>
@@ -97,11 +41,7 @@
       </p>
     </header>
 
-    <TodoForm onSubmit={handleAdd} />
-
-    {#if actionError}
-      <p class="mb-4 text-sm text-red-600" role="alert">{actionError}</p>
-    {/if}
+    <TodoForm actionError={form?.actionError} title={form?.title} />
 
     <TodoFilterBar {activeFilter} {counts} onFilterChange={handleFilterChange} />
 
@@ -112,7 +52,7 @@
         {activeFilter === 'all' ? 'No todos yet. Add one above!' : `No ${activeFilter} todos.`}
       </p>
     {:else}
-      <TodoList todos={visibleTodos} onToggle={handleToggle} onDelete={handleDelete} />
+      <TodoList todos={visibleTodos} />
     {/if}
   </div>
 </div>

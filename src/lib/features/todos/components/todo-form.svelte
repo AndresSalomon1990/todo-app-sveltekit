@@ -1,49 +1,43 @@
 <script lang="ts">
-  import { validateTodoTitle } from '../validation/todo'
+  import { enhance } from '$app/forms'
+  import { invalidateAll } from '$app/navigation'
 
   interface Properties {
-    onSubmit: (title: string) => void
+    actionError?: string
+    title?: string
   }
 
-  let { onSubmit }: Properties = $props()
-
-  let draftTitle = $state('')
-  let error = $state('')
-
-  function handleSubmit(event: SubmitEvent) {
-    event.preventDefault()
-    const validationError = validateTodoTitle(draftTitle)
-    if (validationError) {
-      error = validationError
-      return
-    }
-    onSubmit(draftTitle.trim())
-    draftTitle = ''
-    error = ''
-  }
+  let { actionError, title }: Properties = $props()
 </script>
 
-<form class="mb-6 space-y-3" onsubmit={handleSubmit}>
+<form
+  method="POST"
+  action="?/create"
+  use:enhance={() => {
+    return async ({ result, update }) => {
+      await update() // applies server response (update 'form')
+      if (result.type === 'success') {
+        await invalidateAll() // re-execute 'load' -> 'data.todos' updates
+      }
+    }
+  }}
+  class="mb-6 space-y-3"
+>
   <label class="block text-sm font-medium text-slate-700" for="todo-title"> New todo </label>
 
   <div class="flex flex-col gap-2 sm:flex-row">
     <input
       id="todo-title"
-      bind:value={draftTitle}
-      class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm ring-0 outline-none focus:border-slate-500"
+      name="title"
+      value={title ?? ''}
+      class="..."
       placeholder="Enter a new todo"
       type="text"
     />
-
-    <button
-      class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
-      type="submit"
-    >
-      Add Todo
-    </button>
+    <button type="submit" class="...">Add Todo</button>
   </div>
 
-  {#if error}
-    <p class="text-sm text-red-600">{error}</p>
+  {#if actionError}
+    <p class="text-sm text-red-600" role="alert">{actionError}</p>
   {/if}
 </form>

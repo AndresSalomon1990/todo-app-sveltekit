@@ -2,14 +2,22 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "eslint.enable": true,
-  "eslint.validate": ["javascript", "typescript", "typescriptsvelte", "svelte"],
-  "eslint.codeActionsOnSave.mode": "all",
-  "eslint.format.enable": true,
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "typescript", "svelte"],
+  "eslint.format.enable": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll.eslint": "explicit"
   },
   "chat.tools.terminal.autoApprove": {
     "pnpm": true

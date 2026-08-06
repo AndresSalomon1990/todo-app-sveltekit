@@ -13,7 +13,7 @@
     { value: 'all', label: `All ${counts.all}` },
     { value: 'active', label: `Active ${counts.active}` },
     { value: 'completed', label: `Completed ${counts.completed}` },
-  ]);
+  ])
 </script>
 
 <div class="mb-4 flex gap-2">
