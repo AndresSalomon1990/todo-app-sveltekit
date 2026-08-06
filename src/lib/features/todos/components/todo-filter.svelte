@@ -9,24 +9,26 @@
 
   let { activeFilter, counts, onFilterChange }: Properties = $props()
 
-  const filters = $derived<{ value: TodoFilter; label: string }[]>([
-    { value: 'all', label: `All ${counts.all}` },
-    { value: 'active', label: `Active ${counts.active}` },
-    { value: 'completed', label: `Completed ${counts.completed}` },
+  const filters = $derived<{ value: TodoFilter; label: string; count: number }[]>([
+    { value: 'all', label: 'All', count: counts.all },
+    { value: 'active', label: 'Active', count: counts.active },
+    { value: 'completed', label: 'Done', count: counts.completed },
   ])
 </script>
 
-<div class="mb-4 flex gap-2">
-  {#each filters as { value, label } (value)}
+<div class="flex gap-1.5" role="group" aria-label="Filter tasks">
+  {#each filters as { value, label, count } (value)}
     <button
       type="button"
-      class="rounded-lg px-3 py-1.5 text-sm font-medium transition
+      class="rounded-full px-3 py-1.5 text-xs font-medium tracking-wide uppercase transition-colors
         {activeFilter === value
-        ? 'bg-slate-900 text-white'
-        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}"
+        ? 'bg-ink text-surface'
+        : 'bg-canvas text-ink-muted hover:bg-border/60'}"
+      aria-pressed={activeFilter === value}
       onclick={() => onFilterChange(value)}
     >
       {label}
+      <span class="ml-1 font-mono tabular-nums">{count}</span>
     </button>
   {/each}
 </div>

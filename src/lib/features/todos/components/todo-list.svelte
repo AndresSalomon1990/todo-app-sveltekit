@@ -9,7 +9,7 @@
   let { todos }: Properties = $props()
 </script>
 
-<ul class="space-y-2">
+<ul class="divide-y divide-border">
   {#each todos as todo (todo.id)}
     <TodoItem {todo} />
   {/each}

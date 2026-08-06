@@ -20,9 +20,20 @@ export function filterTodos(todos: Todo[], filter: TodoFilter): Todo[] {
 }
 
 export function todoCounts(todos: Todo[]) {
+  let active = 0
+  let completed = 0
+
+  for (const todo of todos) {
+    if (todo.completed) {
+      completed += 1
+    } else {
+      active += 1
+    }
+  }
+
   return {
     all: todos.length,
-    active: todos.filter((t) => !t.completed).length,
-    completed: todos.filter((t) => t.completed).length,
+    active,
+    completed,
   }
 }
